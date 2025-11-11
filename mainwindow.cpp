@@ -8,18 +8,19 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     //Cria o train com seu (ID, posição X, posição Y)
-    train1 = new Train(1,95,50);
-    train2 = new Train(2,365,50);
-    train3 = new Train(3,635,50);
-    train4 = new Train(4,95,180);
-    train5 = new Train(5,500,180);
-    train6 = new Train(6,95,310);
+    train1 = new Train(1,120,50);
+    train2 = new Train(2,390,50);
+    train3 = new Train(3,660,50);
+    train4 = new Train(4,120,180);
+    train5 = new Train(5,530,180);
+    train6 = new Train(6,100,155);
 
     train1->start();
     train2->start();
     train3->start();
     train4->start();
     train5->start();
+    train6->start();
 
     /*
      * Conecta o sinal UPDATEGUI à função UPDATEINTERFACE.
@@ -54,9 +55,9 @@ void MainWindow::updateInterface(int id, int x, int y){
     case 5: //Atualiza a posição do objeto da tela (quadrado) que representa o train5
         ui->label_trem5->setGeometry(x,y,20,20);
         break;
-    // case 6: //Atualiza a posição do objeto da tela (quadrado) que representa o train5
-    //     ui->label_trem6->setGeometry(x,y,20,20);
-    //     break;
+    case 6: //Atualiza a posição do objeto da tela (quadrado) que representa o train6
+        ui->label_trem6->setGeometry(x,y,20,20);
+        break;
     default:
         break;
     }

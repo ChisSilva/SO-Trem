@@ -7,28 +7,22 @@
 
 #include <iostream>
 
-#define N 12
+#define N 8
 
 sem_t s[N];
 
 //Construtor
 Train::Train(int ID, int x, int y) {
-    // 1 = Livre; 0 = Ocupado
-    // SEMÁFOROS INTERNOS
+    // for (int i = 0; i < N; i++)
+    //     sem_init(&s[i], 0, i == 5 ? 1 : 0);
+    // 1 = Livre; 2 = Ocupado
     sem_init(&s[0], 0, 1); // Livre
     sem_init(&s[1], 0, 1); // Livre
-    sem_init(&s[2], 0, 0); // Ocupado pelo T4
-    sem_init(&s[3], 0, 0); // Ocupado pelo T4
-    sem_init(&s[4], 0, 0); // Ocupado pelo T5
-    sem_init(&s[5], 0, 0); // Ocupado pelo T5
-    sem_init(&s[6], 0, 0); // Ocupado pelo T4
-    //SEMÁFOROS EXTERNOS
-    sem_init(&s[7], 0, 1); // Livre
-    sem_init(&s[8], 0, 1); // Livre
-    sem_init(&s[9], 0, 0); // Ocupado pelo T3
-    sem_init(&s[10], 0, 0); // Ocupado pelo T2
-    sem_init(&s[11], 0, 1); // Ocupado pelo T1 e T6
-
+    sem_init(&s[2], 0, 0); // Ocupado
+    sem_init(&s[3], 0, 0); // Ocupado (só funcionou assim)
+    sem_init(&s[4], 0, 0); // Ocupado
+    sem_init(&s[5], 0, 0); // Livre
+    sem_init(&s[6], 0, 1); // Livre
 
 
     this->ID = ID;
@@ -54,10 +48,10 @@ void Train::run() {
             case 1: // Train 1
                 if (y == 50 && x < 370) { // DIREITA
                     if (x == 350){
-                        // qDebug() << "T1 Entrou na checagem do 0";
+                        qDebug() << "T1 Entrou na checagem do 0";
                         if(sem_trywait(&s[0]) == 0) {
                             if(sem_trywait(&s[2]) == 0) {
-                                // qDebug() << "T1 Alugou 0 e 2";
+                                qDebug() << "T1 Alugou 0 e 2";
                             }else {
                                 sem_post(&s[0]);
                                 break;
@@ -89,7 +83,7 @@ void Train::run() {
             case 2: // Train 2
                 if (y == 50 && x < 640) { // DIREITA
                     if (x == 380){
-                        // qDebug() << "T2 Começou errado";
+                        qDebug() << "T2 Começou errado";
                         sem_post(&s[0]);
                     }
 
@@ -103,7 +97,7 @@ void Train::run() {
                         if (sem_trywait(&s[0]) == 0) {
                             if (sem_trywait(&s[3]) == 0) {
                                 if(sem_trywait(&s[4]) == 0){
-                                    // qDebug() << "T2 solicitou 0, 3 e 4";
+                                    qDebug() << "T2 solicitou 0, 3 e 4";
                                 }else {
                                     sem_post(&s[0]);
                                     sem_post(&s[3]);
@@ -131,9 +125,9 @@ void Train::run() {
                         sem_post(&s[4]);
                     }
                     if (x == 390) {
-                        // qDebug() << "T2 Entrou na checagem do 0";
+                        qDebug() << "T2 Entrou na checagem do 0";
                         if(sem_trywait(&s[0]) == 0){
-                            // qDebug() << "T2 Alugou o: 0";
+                            qDebug() << "T2 Alugou o: 0";
                         }else break;
                     }
 
@@ -156,8 +150,9 @@ void Train::run() {
                 } else if (x == 910 && y < 180) { // DESCE
                     if (y == 160) {
                         if (sem_trywait(&s[5]) == 0) {
+                            qDebug() << "T3 solicitou 5";
                             if(sem_trywait(&s[1]) == 0) {
-
+                                qDebug() << "T3 solicitou 1";
                             }else {
                                 sem_post(&s[5]);
                                 break;
@@ -169,11 +164,7 @@ void Train::run() {
                     y += size_movement;
                 }
                 else if (x > 640 && y == 180) { // ESQUERDA
-                    if (x == 890) {
-                        sem_post(&s[1]);
-                        sem_post(&s[9]);
-                        qDebug() << "T3 SOLTOU 9";
-                    }
+                    if (x == 890) sem_post(&s[1]);
                     if (x == 660) sem_wait(&s[1]);
 
                     x -= size_movement;
@@ -181,11 +172,6 @@ void Train::run() {
                     if (y == 160) {
                         // sem_post(&s[4]);
                         sem_post(&s[5]);
-                    }
-                    if (y == 70) {
-                        if (sem_trywait(&s[9]) == 0) {
-                            qDebug() << "T3 solicitou 9";
-                        } else break;
                     }
 
                     y -= size_movement;
@@ -196,12 +182,12 @@ void Train::run() {
                 break;
             case 4: // Train 4
                 if (y == 180 && x < 510) { // DIREITA
-                    // if (x == 350) {// TESTE
-                    //     if (sem_trywait(&s[6]) == 0) {
-                            // qDebug() << "T4 solicitou 6";
-                    //     }else break;
-                    // }
-                    if (x == 110) sem_post(&s[7]);
+                    if (x == 350) {// TESTE
+                        if (sem_trywait(&s[6]) == 0) {
+                            qDebug() << "T4 solicitou 6";
+                        }else break;
+                    }
+
                     if (x == 390) {
                         sem_post(&s[2]);
                         // sem_post(&s[6]);
@@ -212,12 +198,8 @@ void Train::run() {
 
                     x += size_movement;
                 } else if (x == 510 && y < 310) { // DESCE
-                    if (y == 200) sem_post(&s[3]);
-                    if (y == 290) {
-                        if (sem_trywait(&s[7]) == 0) {
-                            qDebug() << "Ta alugou 7";
-                        } else break;
-                    }
+                    if (y == 200)
+                        sem_post(&s[3]);
 
                     y += size_movement;
                 } else if (x > 100 && y == 310) { // ESQUERDA
@@ -227,24 +209,22 @@ void Train::run() {
                     x -= size_movement;
                 } else if (x == 100 && y > 180) { // SOBE
                     if (y == 200) {
-                        if (sem_trywait(&s[2]) == 0) {
-                            if (sem_trywait(&s[3]) == 0) {
-                                // qDebug() << "Entrou: 3";
-                                if (sem_trywait(&s[6]) == 0) {
-                                    // qDebug() << "Entrou: 6";
-                                } else {
-                                    sem_post(&s[2]);
-                                    sem_post(&s[3]);
-                                    break;
+                        if(sem_trywait(&s[2]) == 0){
+                            if(sem_trywait(&s[3]) == 0){
+                                qDebug() << "Entrou: 3";
+                                for(int i = 0; i < 4; i++){
+                                    y -= size_movement;
+                                    emit updateGUI(ID, x, y);
+                                    msleep(sleep);
                                 }
-                            } else {
+
+                            }else {
                                 sem_post(&s[2]);
                                 break;
                             }
 
-                        } else break;
-                    }
-                    y -= size_movement;
+                        }else break;
+                    }else if (y > 200) y -= size_movement;
                 }
 
                 emit updateGUI(ID, x, y);
@@ -264,7 +244,7 @@ void Train::run() {
                     if (x == 530) {
                         if(sem_trywait(&s[4]) == 0) {
                             if(sem_trywait(&s[6]) == 0) {
-                                // qDebug() << "T5 solicitou 4 e 6";
+                                qDebug() << "T5 solicitou 4 e 6";
                             }else {
                                 sem_post(&s[4]);
                                 break;
@@ -275,13 +255,13 @@ void Train::run() {
                 }
                 else { // SOBE
                     if (y == 270) {
-                        // qDebug() << " T5 liberou 4";
+                        qDebug() << " T5 liberou 4";
                         sem_post(&s[4]);
                     }
                     if (y == 200) {
                         if(sem_trywait(&s[4]) == 0) {
                             if(sem_trywait(&s[5]) == 0) {
-                                // qDebug() << "T5 solicitou 4 e 5";
+                                qDebug() << "T5 solicitou 4 e 5";
                             }else {
                                 sem_post(&s[4]);
                                 break;
@@ -297,91 +277,17 @@ void Train::run() {
                 break;
             case 6: // Train 6
                 if (y == 310 && x < 910) { // DIREITA
-                    if (x == 490) {
-                        if (sem_trywait(&s[8]) == 0) {
-                            if (sem_trywait(&s[9]) == 0) {
-                                qDebug() << "T6 alugou o 8 e 9";
-                            } else {
-                                sem_post(&s[8]);
-                                break;
-                            }
-                        } else break;
-                    }
-                    if (x == 530) {
-                        qDebug() << "T6 SOLTOU o 7 e 9";
-                        sem_post(&s[9]);
-                        sem_post(&s[7]);
-                    }
 
                     x += size_movement;
                 } else if (x == 910 && y > 50) { // SOBE
-                    if (y == 200) {
-                        if (sem_trywait(&s[9]) == 0) {
-                            if (sem_trywait(&s[10]) == 0) {
-                                qDebug() << "T6 alugou o 9 e 10";
-                            } else {
-                                sem_post(&s[9]);
-                                break;
-                            }
-                        } else break;
-                    }
-                    if (y == 160) {
-                        qDebug() << "T6 SOLTOU o 8 e 10";
-                        sem_post(&s[8]);
-                        sem_post(&s[10]);
-                    }
+
                     y -= size_movement;
                 } else if (y == 50 && x > 100) { // ESQUERDA
-                    if (x == 660) {
-                        if (sem_trywait(&s[10]) == 0) {
-                            if (sem_trywait(&s[11]) == 0) {
-                                qDebug() << "T6 alugou o 10 e 11";
-                            } else {
-                                sem_post(&s[10]);
-                                break;
-                            }
-                        } else break;
-                    }
-                    if (x == 620) {
-                        qDebug() << "T6 SOLTOU o 9 e 11";
-                        sem_post(&s[9]);
-                        sem_post(&s[11]);
-                    }
 
-
-                    if (x == 390){
-                        if (sem_trywait(&s[11]) == 0) {
-                            if (sem_trywait(&s[7]) == 0) {
-                                qDebug() << "T6 alugou o 11";
-                            } else {
-                                sem_post(&s[11]);
-                                break;
-                            }
-                        } else break;
-                    }
-                    if (x == 350) {
-                        qDebug() << "T6 SOLTOU o 10 e 7";
-                        sem_post(&s[10]);
-                        sem_post(&s[7]);
-                    }
                     x -= size_movement;
                 }
                 else { // DESCE
-                    if (y == 160) {
-                        if (sem_trywait(&s[7]) == 0) {
-                            if (sem_trywait(&s[8]) == 0) {
-                                qDebug() << "T6 alugou o 7 e 8";
-                            } else {
-                                sem_post(&s[7]);
-                                break;
-                            }
-                        } else break;
-                    }
-                    if (y == 200) {
-                        qDebug() << "T6 SOLTOU o 11 e 8";
-                        sem_post(&s[11]);
-                        sem_post(&s[8]);
-                    }
+
                     y += size_movement;
                 }
 
@@ -397,6 +303,7 @@ void Train::run() {
         }
     }
 }
+
 
 
 
